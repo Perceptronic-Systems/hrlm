@@ -66,3 +66,21 @@ class TransformerOutputModule(nn.Module):
     def forward(self, latent_state):
         # Project back to vocabulary logit space
         return self.linear(latent_state)
+
+class TransformerHRM(nn.Module):
+    def __init__(self, vocab_isze, seq_len, vocab_size, latent_size, num_attn_heads):
+        super().__init__()
+        self.input_mod = TransformerEmbeddingInput(vocab_size, latent_size, seq_len)
+        self.l_mod = TransformerRecurrentCell(latent_size, num_heads=num_attn_heads)
+        self.h_mod = TransformerRecurrentCell(latent_size, num_heads=num_attn_heads)
+        self.output_mod = TransformerOutputModule(latent_size, vocab_size)
+
+        self.transformer_hrm = HRM(
+            input_module=input_mod,
+            l_module=l_mod,
+            h_module=h_mod,
+            output_module=output_mod
+        )
+
+    def forward(self, x, num_outer, num_inner):
+        return transformer_hrm(x, num_outer_cycles=num_outer, num_inner_steps=num_inner)
